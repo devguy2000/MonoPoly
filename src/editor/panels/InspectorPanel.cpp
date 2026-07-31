@@ -1,10 +1,14 @@
 #include "InspectorPanel.hpp"
 #include "scene/SceneGraph.hpp"
 #include "scene/Components.hpp"
+#include "renderer/TextureCache.hpp"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <filesystem>
 #include <cstring>
+
+namespace fs = std::filesystem;
 
 InspectorPanel::InspectorPanel(SceneGraph* scene)
     : m_scene(scene) {}
@@ -56,18 +60,52 @@ void InspectorPanel::DrawTransform2D() {
     ImGui::DragFloat2("Scale", glm::value_ptr(t.scale), 0.01f, 0.001f, 1000.f);
 }
 
+void InspectorPanel::TryLoadTexture(const std::string& contentName) {
+    if (m_projectPath.empty() || contentName.empty()) return;
+    if (!m_scene->HasComponent<SpriteRenderer>(m_selected)) return;
+
+    static const std::vector<std::string> kExts = {".png",".jpg",".jpeg",".bmp"};
+    for (auto& ext : kExts) {
+        fs::path p = fs::path(m_projectPath) / "Content" / (contentName + ext);
+        if (fs::exists(p)) {
+            auto& sr = m_scene->GetComponent<SpriteRenderer>(m_selected);
+            sr.textureID = TextureCache::Get().Load(p.string());
+            return;
+        }
+    }
+}
+
 void InspectorPanel::DrawSpriteRenderer() {
     if (!ImGui::CollapsingHeader("Sprite Renderer", ImGuiTreeNodeFlags_DefaultOpen)) return;
 
     auto& sr = m_scene->GetComponent<SpriteRenderer>(m_selected);
     ImGui::ColorEdit4("Color", glm::value_ptr(sr.color));
 
+    // Texture path input
     char pathBuf[512];
     std::strncpy(pathBuf, sr.texturePath.c_str(), sizeof(pathBuf) - 1);
     pathBuf[sizeof(pathBuf)-1] = '\0';
     ImGui::SetNextItemWidth(-1.f);
-    if (ImGui::InputText("Texture Path", pathBuf, sizeof(pathBuf)))
+    if (ImGui::InputText("Texture##sr", pathBuf, sizeof(pathBuf),
+                         ImGuiInputTextFlags_EnterReturnsTrue))
+    {
         sr.texturePath = pathBuf;
+        TryLoadTexture(sr.texturePath);
+    }
+
+    // Accept drag-drop from AssetBrowserPanel
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* p = ImGui::AcceptDragDropPayload("ASSET_NAME")) {
+            sr.texturePath = static_cast<const char*>(p->Data);
+            TryLoadTexture(sr.texturePath);
+        }
+        ImGui::EndDragDropTarget();
+    }
+
+    if (sr.textureID != 0)
+        ImGui::TextColored({0.4f,1.f,0.4f,1.f}, "Texture loaded (GL %u)", sr.textureID);
+    else
+        ImGui::TextDisabled("No texture — solid color quad");
 
     ImGui::DragInt("Sorting Layer", &sr.sortingLayer);
     ImGui::Checkbox("Flip X", &sr.flipX); ImGui::SameLine();
@@ -113,9 +151,9 @@ void InspectorPanel::DrawCircleCollider2D() {
 }
 
 void InspectorPanel::DrawAddComponentMenu() {
-    if (!ImGui::Button("Add Component"))
-        return;
-    ImGui::OpenPopup("##add_comp");
+    // OpenPopup must be called before BeginPopup; BeginPopup must be called every frame
+    if (ImGui::Button("Add Component"))
+        ImGui::OpenPopup("##add_comp");
 
     if (ImGui::BeginPopup("##add_comp")) {
         if (!m_scene->HasComponent<SpriteRenderer>(m_selected))

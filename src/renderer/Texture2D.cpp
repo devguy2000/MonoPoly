@@ -1,7 +1,6 @@
 #include "Texture2D.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <stb_image.h>  // implementation is in stb_impl.cpp
 
 bool Texture2D::LoadFromFile(const std::string& path) {
     stbi_set_flip_vertically_on_load(1);

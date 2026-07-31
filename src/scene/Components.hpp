@@ -19,8 +19,8 @@ struct TagComponent {
 // ---------------------------------------------------------------------------
 struct Transform2D {
     glm::vec2 position = {0.f, 0.f};
-    float     rotation = 0.f;       // radians
-    glm::vec2 scale    = {1.f, 1.f};
+    float     rotation = 0.f;         // radians
+    glm::vec2 scale    = {100.f, 100.f}; // world units = pixels at zoom 1
 
     glm::mat4 GetMatrix() const {
         glm::mat4 m = glm::translate(glm::mat4{1.f}, {position, 0.f});

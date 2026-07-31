@@ -43,3 +43,12 @@ struct ProjectClosedEvent {};
 struct PlayModeStartedEvent {};
 struct PlayModeStoppedEvent {};
 struct SceneModifiedEvent {};
+
+// ---------------------------------------------------------------------------
+// Content / asset events
+// ---------------------------------------------------------------------------
+
+struct AssetImportedEvent {
+    std::string assetPath;    // absolute path to the image file
+    std::string contentName;  // content name without extension (e.g. "player")
+};

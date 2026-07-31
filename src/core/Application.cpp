@@ -217,9 +217,14 @@ void Application::BuildDefaultDockLayout(unsigned int dockId) {
     ImGuiID nodeBottom;
     ImGui::DockBuilderSplitNode(nodeCenter, ImGuiDir_Down, 0.25f, &nodeBottom, &nodeCenter);
 
+    // Split bottom: Assets left, Console right
+    ImGuiID nodeAssets;
+    ImGui::DockBuilderSplitNode(nodeBottom, ImGuiDir_Left, 0.28f, &nodeAssets, &nodeBottom);
+
     ImGui::DockBuilderDockWindow("Scene Hierarchy", nodeLeft);
     ImGui::DockBuilderDockWindow("Viewport",        nodeCenter);
     ImGui::DockBuilderDockWindow("Inspector",       nodeRight);
+    ImGui::DockBuilderDockWindow("Assets",          nodeAssets);
     ImGui::DockBuilderDockWindow("Console",         nodeBottom);
 
     ImGui::DockBuilderFinish(dockId);

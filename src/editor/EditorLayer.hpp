@@ -7,6 +7,7 @@ class SceneHierarchyPanel;
 class InspectorPanel;
 class ViewportPanel;
 class LaunchScreen;
+class AssetBrowserPanel;
 class SceneGraph;
 
 class EditorLayer {
@@ -25,6 +26,8 @@ private:
     void DrawMenuBar();
     void SaveScene();
     void NewScene();
+    void OnProjectReady(const std::string& projectPath, const std::string& csprojPath,
+                        const std::string& projectName);
 
     bool        m_projectOpen    = false;
     bool        m_showDemoWindow = false;
@@ -36,5 +39,6 @@ private:
     std::unique_ptr<SceneHierarchyPanel>  m_hierarchy;
     std::unique_ptr<InspectorPanel>       m_inspector;
     std::unique_ptr<ViewportPanel>        m_viewport;
+    std::unique_ptr<AssetBrowserPanel>    m_assetBrowser;
     std::unique_ptr<LaunchScreen>         m_launchScreen;
 };
