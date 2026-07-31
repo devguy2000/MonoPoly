@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where vcpkg *)",
+      "Bash(where ninja *)",
+      "Bash(cmake --version)",
+      "Bash(where.exe vcpkg *)",
+      "Bash(where.exe ninja *)",
+      "Bash(powershell -Command \"[Environment]::GetEnvironmentVariable\\('VCPKG_ROOT','User'\\); [Environment]::GetEnvironmentVariable\\('VCPKG_ROOT','Machine'\\)\")",
+      "Bash(powershell -Command \"Get-ChildItem 'C:\\\\' -Filter 'vcpkg.exe' -Recurse -ErrorAction SilentlyContinue -Depth 4 | Select-Object -First 5 FullName\")",
+      "Bash(powershell -Command \"Get-ChildItem 'C:\\\\Program Files\\\\Microsoft Visual Studio' -Recurse -Filter 'ninja.exe' -ErrorAction SilentlyContinue -Depth 8 | Select-Object -First 3 FullName; Get-ChildItem 'C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio' -Recurse -Filter 'ninja.exe' -ErrorAction SilentlyContinue -Depth 8 | Select-Object -First 3 FullName\")",
+      "PowerShell(Get-ChildItem 'C:\\\\Users\\\\Karthik\\\\Desktop\\\\MonoPoly\\\\build\\\\debug\\\\_deps\\\\imguizmo-src\\\\' | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem 'C:\\\\Users\\\\Karthik\\\\Desktop\\\\MonoPoly\\\\build\\\\debug\\\\_deps\\\\imguizmo-src\\\\src\\\\' | ForEach-Object { $_.Name })",
+      "PowerShell(& 'C:\\\\msys64\\\\ucrt64\\\\bin\\\\python3.12.exe' -m pip install jinja2 2>&1)",
+      "PowerShell(& 'C:\\\\msys64\\\\ucrt64\\\\bin\\\\python3.12.exe' -c \"import jinja2; print\\('jinja2', jinja2.__version__\\)\" 2>&1)",
+      "PowerShell(& 'C:\\\\Users\\\\Karthik\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe' -m pip install jinja2 2>&1)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}

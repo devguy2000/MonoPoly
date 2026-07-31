@@ -13,6 +13,7 @@ find_package(glad          CONFIG REQUIRED)   # pre-built, GL 4.6 Core, no Pytho
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(EnTT          CONFIG REQUIRED)
 find_package(glm           CONFIG REQUIRED)
+find_package(Stb           REQUIRED)
 
 # --------------------------------------------------------------------------
 # Dear ImGui  –  docking branch  (FetchContent, no Python needed)
@@ -75,6 +76,7 @@ target_link_libraries(MonoPoly PRIVATE
     EnTT::EnTT
     glm::glm
 )
+target_include_directories(MonoPoly PRIVATE ${Stb_INCLUDE_DIR})
 
 # --------------------------------------------------------------------------
 # Compiler settings

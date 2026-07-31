@@ -1,12 +1,25 @@
 #pragma once
-#include <imgui.h>
+#include <entt/entt.hpp>
 
-// Phase 0 stub – wired up fully in Phase 1 with the component inspector.
+class SceneGraph;
+
 class InspectorPanel {
 public:
-    void OnImGuiRender() {
-        ImGui::Begin("Inspector");
-        ImGui::TextDisabled("(No selection)");
-        ImGui::End();
-    }
+    explicit InspectorPanel(SceneGraph* scene = nullptr);
+
+    void SetScene(SceneGraph* scene) { m_scene = scene; }
+    void SetSelected(entt::entity e) { m_selected = e; }
+    void OnImGuiRender();
+
+private:
+    void DrawTag();
+    void DrawTransform2D();
+    void DrawSpriteRenderer();
+    void DrawCamera2D();
+    void DrawBoxCollider2D();
+    void DrawCircleCollider2D();
+    void DrawAddComponentMenu();
+
+    SceneGraph*  m_scene    = nullptr;
+    entt::entity m_selected = entt::null;
 };

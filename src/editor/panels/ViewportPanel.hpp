@@ -1,26 +1,35 @@
 #pragma once
-#include <imgui.h>
+#include "renderer/Framebuffer.hpp"
+#include "renderer/Renderer2D.hpp"
+#include <glm/glm.hpp>
 
-// Phase 0 stub – Framebuffer + debug renderer wired in Phase 1.
+class SceneGraph;
+
 class ViewportPanel {
 public:
-    void OnImGuiRender() {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.f, 0.f});
-        ImGui::Begin("Viewport");
+    ViewportPanel();
+    ~ViewportPanel() = default;
 
-        ImVec2 size = ImGui::GetContentRegionAvail();
+    void SetScene(SceneGraph* scene) { m_scene = scene; }
+    void OnImGuiRender(float dt);
 
-        // Placeholder fill so the panel isn't visually empty
-        ImDrawList* dl = ImGui::GetWindowDrawList();
-        ImVec2 p0 = ImGui::GetCursorScreenPos();
-        ImVec2 p1 = {p0.x + size.x, p0.y + size.y};
-        dl->AddRectFilled(p0, p1, IM_COL32(30, 30, 36, 255));
-        dl->AddText({p0.x + size.x * 0.5f - 80.f, p0.y + size.y * 0.5f - 8.f},
-                    IM_COL32(80, 80, 100, 255),
-                    "2D Viewport (Phase 1)");
+private:
+    void RenderScene();
+    glm::mat4 GetViewProjection() const;
 
-        ImGui::Dummy(size); // reserve the region
-        ImGui::End();
-        ImGui::PopStyleVar();
-    }
+    SceneGraph*  m_scene = nullptr;
+    Framebuffer  m_fbo;
+    Renderer2D   m_renderer;
+    bool         m_initialized = false;
+
+    // Editor camera state
+    glm::vec2    m_camPos    = {0.f, 0.f};
+    float        m_camZoom   = 1.f;
+    int          m_vpWidth   = 1;
+    int          m_vpHeight  = 1;
+
+    // Pan state
+    bool         m_panning   = false;
+    glm::vec2    m_panStart  = {};
+    glm::vec2    m_camStart  = {};
 };
