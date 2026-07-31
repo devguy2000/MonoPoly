@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "monopoly",
+  "version": "0.1.0",
+  "description": "MonoPoly – Visual IDE frontend for MonoGame",
+  "dependencies": [
+    "sdl3",
+    "glad",
+    "nlohmann-json",
+    "entt",
+    "glm"
+  ]
+}

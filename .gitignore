@@ -1,0 +1,17 @@
+build/
+out/
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+CMakeSettings.json
+.cmake/
+vcpkg_installed/
+vendor/
+monopoly_layout.ini
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.lib
