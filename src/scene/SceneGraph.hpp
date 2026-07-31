@@ -1,5 +1,6 @@
 #pragma once
 #include <entt/entt.hpp>
+#include "Components.hpp"
 #include <string>
 #include <vector>
 #include <functional>
@@ -41,6 +42,10 @@ public:
 
     entt::registry& Registry() { return m_registry; }
 
+    // Scene-level settings (background color, resolution)
+    SceneSettings&       Settings()       { return m_settings; }
+    const SceneSettings& Settings() const { return m_settings; }
+
     void Clear();
 
     bool IsDirty() const { return m_dirty; }
@@ -48,7 +53,8 @@ public:
 
 private:
     entt::registry m_registry;
-    bool           m_dirty = false;
+    SceneSettings  m_settings;
+    bool           m_dirty  = false;
     uint32_t       m_nextId = 1;
 
     void RemoveFromParent(entt::entity e);

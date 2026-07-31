@@ -152,8 +152,16 @@ static entt::entity DeserializeEntity(SceneGraph& scene,
 bool SceneSerializer::SaveToFile(const std::string& filepath) {
     json root;
     root["version"] = 1;
-    root["entities"] = json::array();
 
+    // Scene-level settings
+    const auto& s = m_scene.Settings();
+    root["settings"] = {
+        {"bg_color",  SerializeVec4(s.backgroundColor)},
+        {"screen_w",  s.screenWidth},
+        {"screen_h",  s.screenHeight}
+    };
+
+    root["entities"] = json::array();
     for (entt::entity e : m_scene.GetRootEntities())
         root["entities"].push_back(SerializeEntity(m_scene, e));
 
@@ -172,6 +180,15 @@ bool SceneSerializer::LoadFromFile(const std::string& filepath) {
     catch (...) { return false; }
 
     m_scene.Clear();
+
+    // Restore scene-level settings
+    if (root.contains("settings")) {
+        auto& js = root["settings"];
+        auto& s  = m_scene.Settings();
+        if (js.contains("bg_color")) s.backgroundColor = DeserVec4(js["bg_color"]);
+        s.screenWidth  = js.value("screen_w", 1280);
+        s.screenHeight = js.value("screen_h", 720);
+    }
 
     if (!root.contains("entities")) return false;
     for (auto& je : root["entities"])

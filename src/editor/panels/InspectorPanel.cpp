@@ -14,11 +14,24 @@ InspectorPanel::InspectorPanel(SceneGraph* scene)
     : m_scene(scene) {}
 
 // ---------------------------------------------------------------------------
+void InspectorPanel::DrawSceneSettings() {
+    if (!m_scene) return;
+    auto& s = m_scene->Settings();
+
+    if (ImGui::CollapsingHeader("Scene Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::ColorEdit3("Background", glm::value_ptr(s.backgroundColor));
+        ImGui::DragInt("Screen Width",  &s.screenWidth,  1.f, 320, 7680);
+        ImGui::DragInt("Screen Height", &s.screenHeight, 1.f, 240, 4320);
+        ImGui::TextDisabled("Saved with scene \xe2\x80\x94 applied on Play");
+    }
+}
+
 void InspectorPanel::OnImGuiRender() {
     ImGui::Begin("Inspector");
 
     if (!m_scene || m_selected == entt::null || !m_scene->Registry().valid(m_selected)) {
-        ImGui::TextDisabled("(No selection)");
+        // No entity selected — show scene-level settings
+        DrawSceneSettings();
         ImGui::End();
         return;
     }

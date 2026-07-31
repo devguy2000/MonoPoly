@@ -77,6 +77,11 @@ void EditorLayer::OnAttach() {
         m_console->LogSuccess("Asset imported: " + e.contentName);
     });
 
+    EventBus::Get().Subscribe<FileDroppedEvent>([this](const FileDroppedEvent& e) {
+        if (!m_projectOpen) return;
+        ProjectManager::Get().AddImageToContent(e.path);
+    });
+
     m_console->LogInfo("MonoPoly IDE initialised. Welcome.");
     m_console->LogInfo("File → New Project  or  File → Open Project  to begin.");
 }
@@ -88,12 +93,14 @@ void EditorLayer::OnProjectReady(const std::string& projectPath,
 {
     m_projectOpen = true;
     m_projectPath = projectPath;
+    m_projectName = projectName;
     m_scenePath   = (fs::path(projectPath) / "Scene.mpscene").string();
 
     ProjectManager::Get().SetProject(projectPath, csprojPath);
 
-    // Patch Game1.cs to our runtime scene reader
-    if (GameCodeGen::GenerateGame1(projectPath, projectName))
+    // Patch Game1.cs to our runtime scene reader (use scene resolution + bg color)
+    auto& s = m_scene->Settings();
+    if (GameCodeGen::GenerateGame1(projectPath, projectName, s.screenWidth, s.screenHeight, s.backgroundColor))
         m_console->LogSuccess("Game1.cs generated for runtime scene loading.");
     else
         m_console->LogError("Could not write Game1.cs.");
@@ -129,10 +136,18 @@ void EditorLayer::NewScene() {
 void EditorLayer::SaveScene() {
     if (m_scenePath.empty()) return;
     SceneSerializer ser(*m_scene);
-    if (ser.SaveToFile(m_scenePath))
-        m_console->LogSuccess("Scene saved → " + m_scenePath);
-    else
+    if (!ser.SaveToFile(m_scenePath)) {
         m_console->LogError("Scene save failed: " + m_scenePath);
+        return;
+    }
+    m_console->LogSuccess("Scene saved → " + m_scenePath);
+
+    // Regenerate Game1.cs so bg color and resolution stay in sync
+    if (!m_projectPath.empty() && !m_projectName.empty()) {
+        auto& s = m_scene->Settings();
+        GameCodeGen::GenerateGame1(m_projectPath, m_projectName,
+                                    s.screenWidth, s.screenHeight, s.backgroundColor);
+    }
 }
 
 // ---------------------------------------------------------------------------

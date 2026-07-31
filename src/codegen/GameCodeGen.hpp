@@ -1,10 +1,11 @@
 #pragma once
 #include <string>
+#include <glm/glm.hpp>
 
 class GameCodeGen {
 public:
-    // Replaces Game1.cs with a runtime scene-reading version.
-    // Returns false if the file can't be written.
     static bool GenerateGame1(const std::string& projectPath,
-                              const std::string& projectName);
+                              const std::string& projectName,
+                              int screenW = 1280, int screenH = 720,
+                              glm::vec4 bgColor = {0,0,0,1});
 };

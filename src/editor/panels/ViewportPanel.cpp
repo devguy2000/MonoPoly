@@ -1,6 +1,7 @@
 #include "ViewportPanel.hpp"
 #include "scene/SceneGraph.hpp"
 #include "scene/Components.hpp"
+#include <glm/gtc/type_ptr.hpp>
 
 #include <imgui.h>
 #include <glad/glad.h>
@@ -24,7 +25,9 @@ glm::mat4 ViewportPanel::GetViewProjection() const {
 // ---------------------------------------------------------------------------
 void ViewportPanel::RenderScene() {
     m_fbo.Bind();
-    glClearColor(0.15f, 0.15f, 0.18f, 1.f);
+    // Use scene background color so the preview matches the game exactly
+    glm::vec4 bg = m_scene ? m_scene->Settings().backgroundColor : glm::vec4{0.f,0.f,0.f,1.f};
+    glClearColor(bg.r, bg.g, bg.b, bg.a);
     glClear(GL_COLOR_BUFFER_BIT);
 
     m_renderer.BeginScene(GetViewProjection());

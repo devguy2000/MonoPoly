@@ -1,5 +1,6 @@
 #include "Application.hpp"
 #include "EventBus.hpp"
+#include "Events.hpp"
 
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
@@ -148,6 +149,11 @@ void Application::ProcessEvents() {
         case SDL_EVENT_WINDOW_RESIZED:
             m_width  = e.window.data1;
             m_height = e.window.data2;
+            break;
+        case SDL_EVENT_DROP_FILE:
+            // OS file drag-drop — copy path immediately, SDL3 frees it after PollEvent returns
+            if (e.drop.data)
+                EventBus::Get().EmitDeferred(FileDroppedEvent{std::string(e.drop.data)});
             break;
         default: break;
         }

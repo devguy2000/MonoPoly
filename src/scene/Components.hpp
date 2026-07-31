@@ -72,6 +72,16 @@ struct CircleCollider2D {
 };
 
 // ---------------------------------------------------------------------------
+// Scene-level settings (background, resolution)
+// Stored once per scene, not per entity
+// ---------------------------------------------------------------------------
+struct SceneSettings {
+    glm::vec4 backgroundColor = {0.f, 0.f, 0.f, 1.f}; // matches game default
+    int       screenWidth     = 1280;
+    int       screenHeight    = 720;
+};
+
+// ---------------------------------------------------------------------------
 // Scene relationship (parent-child tree)
 // ---------------------------------------------------------------------------
 struct Parent {

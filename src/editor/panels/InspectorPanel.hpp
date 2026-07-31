@@ -22,6 +22,7 @@ private:
     void DrawCircleCollider2D();
     void DrawAddComponentMenu();
 
+    void DrawSceneSettings();
     void TryLoadTexture(const std::string& contentName);
 
     SceneGraph*  m_scene       = nullptr;

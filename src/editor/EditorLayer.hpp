@@ -32,6 +32,7 @@ private:
     bool        m_projectOpen    = false;
     bool        m_showDemoWindow = false;
     std::string m_projectPath;
+    std::string m_projectName;
     std::string m_scenePath;
 
     std::unique_ptr<SceneGraph>           m_scene;

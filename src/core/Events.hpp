@@ -52,3 +52,11 @@ struct AssetImportedEvent {
     std::string assetPath;    // absolute path to the image file
     std::string contentName;  // content name without extension (e.g. "player")
 };
+
+// ---------------------------------------------------------------------------
+// File system events (from OS drag-drop)
+// ---------------------------------------------------------------------------
+
+struct FileDroppedEvent {
+    std::string path;   // absolute path of the dropped file
+};
