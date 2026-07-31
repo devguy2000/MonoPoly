@@ -9,6 +9,7 @@
 #include "panels/InspectorPanel.hpp"
 #include "panels/ViewportPanel.hpp"
 #include "panels/AssetBrowserPanel.hpp"
+#include "panels/SolutionExplorerPanel.hpp"
 #include "launch/LaunchScreen.hpp"
 #include "core/EventBus.hpp"
 #include "core/Events.hpp"
@@ -30,10 +31,17 @@ void EditorLayer::OnAttach() {
     m_console      = std::make_unique<ConsolePanel>();
     m_hierarchy    = std::make_unique<SceneHierarchyPanel>(m_scene.get());
     m_inspector    = std::make_unique<InspectorPanel>(m_scene.get());
-    m_viewport     = std::make_unique<ViewportPanel>();
-    m_assetBrowser = std::make_unique<AssetBrowserPanel>();
+    m_viewport         = std::make_unique<ViewportPanel>();
+    m_assetBrowser     = std::make_unique<AssetBrowserPanel>();
+    m_solutionExplorer = std::make_unique<SolutionExplorerPanel>();
     m_viewport->SetScene(m_scene.get());
     m_launchScreen = std::make_unique<LaunchScreen>(m_console.get());
+
+    // When the user clicks a sprite in the viewport, sync selection to hierarchy + inspector
+    m_viewport->SetOnEntityPicked([this](entt::entity e) {
+        m_hierarchy->SetSelected(e);
+        m_inspector->SetSelected(e);
+    });
 
     ProjectManager::Get().Init(m_console.get());
 
@@ -110,11 +118,13 @@ void EditorLayer::OnProjectReady(const std::string& projectPath,
     m_inspector->SetProjectPath(projectPath);
     m_viewport->SetScene(m_scene.get());
     m_assetBrowser->SetProject(projectPath, ProjectManager::Get().ContentDir());
+    m_solutionExplorer->SetProject(projectPath);
 }
 
 // ---------------------------------------------------------------------------
 void EditorLayer::OnDetach() {
     m_launchScreen.reset();
+    m_solutionExplorer.reset();
     m_assetBrowser.reset();
     m_viewport.reset();
     m_inspector.reset();
@@ -154,14 +164,18 @@ void EditorLayer::SaveScene() {
 void EditorLayer::OnImGuiRender(float dt) {
     DrawMenuBar();
 
-    if (m_hierarchy)
-        m_inspector->SetSelected(m_hierarchy->SelectedEntity());
+    if (m_hierarchy) {
+        entt::entity sel = m_hierarchy->SelectedEntity();
+        m_inspector->SetSelected(sel);
+        m_viewport->SetSelected(sel);
+    }
 
     m_hierarchy->OnImGuiRender();
     m_viewport->OnImGuiRender(dt);
     m_inspector->OnImGuiRender();
     m_console->OnImGuiRender();
     m_assetBrowser->OnImGuiRender();
+    m_solutionExplorer->OnImGuiRender();
 
     if (!m_projectOpen)
         m_launchScreen->OnImGuiRender();

@@ -91,3 +91,11 @@ struct Parent {
 struct Children {
     std::vector<entt::entity> list;
 };
+
+// ---------------------------------------------------------------------------
+// ScriptComponent – associates a C# source file with an entity
+// ---------------------------------------------------------------------------
+struct ScriptComponent {
+    std::string className; // C# class name, e.g. "PlayerController"
+    std::string filePath;  // relative to project root, e.g. "Scripts/PlayerController.cs"
+};

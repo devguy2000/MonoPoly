@@ -8,6 +8,7 @@ class InspectorPanel;
 class ViewportPanel;
 class LaunchScreen;
 class AssetBrowserPanel;
+class SolutionExplorerPanel;
 class SceneGraph;
 
 class EditorLayer {
@@ -35,11 +36,12 @@ private:
     std::string m_projectName;
     std::string m_scenePath;
 
-    std::unique_ptr<SceneGraph>           m_scene;
-    std::unique_ptr<ConsolePanel>         m_console;
-    std::unique_ptr<SceneHierarchyPanel>  m_hierarchy;
-    std::unique_ptr<InspectorPanel>       m_inspector;
-    std::unique_ptr<ViewportPanel>        m_viewport;
-    std::unique_ptr<AssetBrowserPanel>    m_assetBrowser;
-    std::unique_ptr<LaunchScreen>         m_launchScreen;
+    std::unique_ptr<SceneGraph>             m_scene;
+    std::unique_ptr<ConsolePanel>           m_console;
+    std::unique_ptr<SceneHierarchyPanel>    m_hierarchy;
+    std::unique_ptr<InspectorPanel>         m_inspector;
+    std::unique_ptr<ViewportPanel>          m_viewport;
+    std::unique_ptr<AssetBrowserPanel>      m_assetBrowser;
+    std::unique_ptr<SolutionExplorerPanel>  m_solutionExplorer;
+    std::unique_ptr<LaunchScreen>           m_launchScreen;
 };

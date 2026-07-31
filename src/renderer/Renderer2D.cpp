@@ -6,6 +6,8 @@
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
+#include <vector>
+#include <algorithm>
 
 // ---------------------------------------------------------------------------
 // GLSL sources
@@ -177,10 +179,11 @@ void Renderer2D::EndScene() {
 
 // ---------------------------------------------------------------------------
 void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color) {
-    DrawQuad(transform, 0 /*white*/, color);
+    DrawQuad(transform, 0 /*white*/, color, false, false);
 }
 
-void Renderer2D::DrawQuad(const glm::mat4& transform, GLuint textureID, const glm::vec4& tint) {
+void Renderer2D::DrawQuad(const glm::mat4& transform, GLuint textureID,
+                           const glm::vec4& tint, bool flipX, bool flipY) {
     if (m_quadCount >= kMaxQuads) { Flush(); m_quadPtr = m_quadBase; m_quadCount = 0; m_texSlotIdx = 1; }
 
     float texIdx = 0.f;
@@ -200,16 +203,26 @@ void Renderer2D::DrawQuad(const glm::mat4& transform, GLuint textureID, const gl
         { 0.5f,  0.5f, 0.f, 1.f},
         {-0.5f,  0.5f, 0.f, 1.f},
     };
-    static const glm::vec2 kUVs[4] = {{0,0},{1,0},{1,1},{0,1}};
+    static const glm::vec2 kBaseUVs[4] = {{0,0},{1,0},{1,1},{0,1}};
 
     for (int i = 0; i < 4; ++i) {
+        glm::vec2 uv = kBaseUVs[i];
+        if (flipX) uv.x = 1.f - uv.x;
+        if (flipY) uv.y = 1.f - uv.y;
         m_quadPtr->position = transform * kCorners[i];
         m_quadPtr->color    = tint;
-        m_quadPtr->uv       = kUVs[i];
+        m_quadPtr->uv       = uv;
         m_quadPtr->texIndex = texIdx;
         ++m_quadPtr;
     }
     ++m_quadCount;
+}
+
+void Renderer2D::DrawLine(const glm::vec2& from, const glm::vec2& to, const glm::vec4& color) {
+    if (m_lineCount >= kMaxLines) FlushLines();
+    m_linePtr->position = {from, 0.f}; m_linePtr->color = color; ++m_linePtr;
+    m_linePtr->position = {to,   0.f}; m_linePtr->color = color; ++m_linePtr;
+    ++m_lineCount;
 }
 
 // ---------------------------------------------------------------------------
@@ -243,12 +256,26 @@ void Renderer2D::DrawCircle(const glm::vec2& center, float radius, const glm::ve
 
 // ---------------------------------------------------------------------------
 void Renderer2D::DrawScene(SceneGraph& scene) {
-    auto view = scene.View<Transform2D, SpriteRenderer>();
-    for (auto [entity, tf, sr] : view.each()) {
-        if (sr.textureID != 0)
-            DrawQuad(tf.GetMatrix(), sr.textureID, sr.color);
-        else
-            DrawQuad(tf.GetMatrix(), sr.color);
+    // Collect and sort sprites by sortingLayer (ascending = back to front)
+    struct SpriteInfo {
+        glm::mat4 transform;
+        glm::vec4 color;
+        GLuint    texID;
+        bool      flipX, flipY;
+        int       layer;
+    };
+    std::vector<SpriteInfo> sprites;
+    sprites.reserve(64);
+    for (auto [e, tf, sr] : scene.View<Transform2D, SpriteRenderer>().each())
+        sprites.push_back({tf.GetMatrix(), sr.color, sr.textureID, sr.flipX, sr.flipY, sr.sortingLayer});
+
+    std::sort(sprites.begin(), sprites.end(), [](const SpriteInfo& a, const SpriteInfo& b) {
+        return a.layer < b.layer;
+    });
+
+    for (auto& s : sprites) {
+        if (s.texID != 0) DrawQuad(s.transform, s.texID, s.color, s.flipX, s.flipY);
+        else               DrawQuad(s.transform, s.color);
     }
 
     // Collider overlays

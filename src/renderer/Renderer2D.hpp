@@ -25,8 +25,13 @@ public:
 
     // Solid colored quad (world space)
     void DrawQuad(const glm::mat4& transform, const glm::vec4& color);
-    // Textured quad
-    void DrawQuad(const glm::mat4& transform, GLuint textureID, const glm::vec4& tint = {1,1,1,1});
+    // Textured quad (flipX/flipY mirror the UV coordinates)
+    void DrawQuad(const glm::mat4& transform, GLuint textureID,
+                  const glm::vec4& tint = {1,1,1,1},
+                  bool flipX = false, bool flipY = false);
+
+    // Single line segment
+    void DrawLine(const glm::vec2& from, const glm::vec2& to, const glm::vec4& color);
 
     // Collider debug outlines (wireframe)
     void DrawRect(const glm::vec2& center, const glm::vec2& size, const glm::vec4& color);

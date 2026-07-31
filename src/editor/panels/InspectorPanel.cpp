@@ -6,7 +6,14 @@
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <filesystem>
+#include <fstream>
 #include <cstring>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#include <shellapi.h>
+#pragma comment(lib, "Shell32.lib")
 
 namespace fs = std::filesystem;
 
@@ -40,10 +47,11 @@ void InspectorPanel::OnImGuiRender() {
     ImGui::Separator();
     DrawTransform2D();
 
-    if (m_scene->HasComponent<SpriteRenderer>(m_selected)) { ImGui::Separator(); DrawSpriteRenderer(); }
-    if (m_scene->HasComponent<Camera2D>(m_selected))       { ImGui::Separator(); DrawCamera2D(); }
-    if (m_scene->HasComponent<BoxCollider2D>(m_selected))  { ImGui::Separator(); DrawBoxCollider2D(); }
+    if (m_scene->HasComponent<SpriteRenderer>(m_selected))  { ImGui::Separator(); DrawSpriteRenderer(); }
+    if (m_scene->HasComponent<Camera2D>(m_selected))        { ImGui::Separator(); DrawCamera2D(); }
+    if (m_scene->HasComponent<BoxCollider2D>(m_selected))   { ImGui::Separator(); DrawBoxCollider2D(); }
     if (m_scene->HasComponent<CircleCollider2D>(m_selected)){ ImGui::Separator(); DrawCircleCollider2D(); }
+    if (m_scene->HasComponent<ScriptComponent>(m_selected)) { ImGui::Separator(); DrawScriptComponent(); }
 
     ImGui::Spacing();
     DrawAddComponentMenu();
@@ -124,6 +132,17 @@ void InspectorPanel::DrawSpriteRenderer() {
     ImGui::Checkbox("Flip X", &sr.flipX); ImGui::SameLine();
     ImGui::Checkbox("Flip Y", &sr.flipY);
 
+    // Fill screen: resize this sprite to cover the entire game viewport
+    if (ImGui::Button("Fill Screen##sr")) {
+        auto& s = m_scene->Settings();
+        auto& t = m_scene->GetComponent<Transform2D>(m_selected);
+        t.position = {0.f, 0.f};
+        t.scale    = {(float)s.screenWidth, (float)s.screenHeight};
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(%dx%d)", m_scene->Settings().screenWidth,
+                                   m_scene->Settings().screenHeight);
+
     if (ImGui::SmallButton("Remove##sr"))
         m_scene->RemoveComponent<SpriteRenderer>(m_selected);
 }
@@ -164,7 +183,6 @@ void InspectorPanel::DrawCircleCollider2D() {
 }
 
 void InspectorPanel::DrawAddComponentMenu() {
-    // OpenPopup must be called before BeginPopup; BeginPopup must be called every frame
     if (ImGui::Button("Add Component"))
         ImGui::OpenPopup("##add_comp");
 
@@ -181,6 +199,57 @@ void InspectorPanel::DrawAddComponentMenu() {
         if (!m_scene->HasComponent<CircleCollider2D>(m_selected))
             if (ImGui::MenuItem("Circle Collider 2D"))
                 m_scene->AddComponent<CircleCollider2D>(m_selected);
+        if (!m_scene->HasComponent<ScriptComponent>(m_selected))
+            if (ImGui::MenuItem("Script Component"))
+                m_scene->AddComponent<ScriptComponent>(m_selected);
         ImGui::EndPopup();
     }
+}
+
+// ---------------------------------------------------------------------------
+void InspectorPanel::DrawScriptComponent() {
+    if (!ImGui::CollapsingHeader("Script Component", ImGuiTreeNodeFlags_DefaultOpen)) return;
+
+    auto& sc = m_scene->GetComponent<ScriptComponent>(m_selected);
+
+    char classBuf[256];
+    std::strncpy(classBuf, sc.className.c_str(), sizeof(classBuf) - 1);
+    classBuf[sizeof(classBuf) - 1] = '\0';
+    ImGui::SetNextItemWidth(-1.f);
+    if (ImGui::InputText("Class##sc", classBuf, sizeof(classBuf)))
+        sc.className = classBuf;
+
+    char fileBuf[512];
+    std::strncpy(fileBuf, sc.filePath.c_str(), sizeof(fileBuf) - 1);
+    fileBuf[sizeof(fileBuf) - 1] = '\0';
+    ImGui::SetNextItemWidth(-80.f);
+    if (ImGui::InputText("File##sc", fileBuf, sizeof(fileBuf)))
+        sc.filePath = fileBuf;
+    ImGui::SameLine();
+    if (ImGui::Button("Open##sc")) {
+        if (!m_projectPath.empty() && !sc.filePath.empty()) {
+            fs::path fp = fs::path(m_projectPath) / sc.filePath;
+            if (fs::exists(fp))
+                ShellExecuteW(nullptr, L"open", fp.wstring().c_str(),
+                              nullptr, nullptr, SW_SHOW);
+        }
+    }
+
+    if (ImGui::Button("Create Script##sc")) {
+        if (!sc.className.empty()) {
+            if (sc.filePath.empty())
+                sc.filePath = "Scripts/" + sc.className + ".cs";
+            fs::path fp = fs::path(m_projectPath) / sc.filePath;
+            fs::create_directories(fp.parent_path());
+            if (!fs::exists(fp)) {
+                std::ofstream f(fp.string());
+                f << "using Microsoft.Xna.Framework;\n\n"
+                     "public class " << sc.className << "\n{\n"
+                     "    public void Update(GameTime gameTime)\n    {\n    }\n}\n";
+            }
+        }
+    }
+
+    if (ImGui::SmallButton("Remove##sc"))
+        m_scene->RemoveComponent<ScriptComponent>(m_selected);
 }

@@ -74,6 +74,11 @@ static json SerializeEntity(SceneGraph& scene, entt::entity e) {
         };
     }
 
+    if (reg.all_of<ScriptComponent>(e)) {
+        auto& sc = reg.get<ScriptComponent>(e);
+        je["script"] = {{"class", sc.className}, {"file", sc.filePath}};
+    }
+
     // Recurse children
     auto children = scene.GetChildren(e);
     if (!children.empty()) {
@@ -138,6 +143,13 @@ static entt::entity DeserializeEntity(SceneGraph& scene,
         cc.offset    = DeserVec2(jcc.value("offset", json{}));
         cc.radius    = jcc.value("radius", 0.5f);
         cc.isTrigger = jcc.value("is_trigger", false);
+    }
+
+    if (je.contains("script")) {
+        auto& js = je["script"];
+        auto& sc = scene.AddComponent<ScriptComponent>(e);
+        sc.className = js.value("class", "");
+        sc.filePath  = js.value("file", "");
     }
 
     if (je.contains("children") && je["children"].is_array()) {

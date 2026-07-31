@@ -23,6 +23,7 @@ private:
     void DrawAddComponentMenu();
 
     void DrawSceneSettings();
+    void DrawScriptComponent();
     void TryLoadTexture(const std::string& contentName);
 
     SceneGraph*  m_scene       = nullptr;

@@ -228,6 +228,7 @@ void Application::BuildDefaultDockLayout(unsigned int dockId) {
     ImGui::DockBuilderSplitNode(nodeBottom, ImGuiDir_Left, 0.28f, &nodeAssets, &nodeBottom);
 
     ImGui::DockBuilderDockWindow("Scene Hierarchy", nodeLeft);
+    ImGui::DockBuilderDockWindow("Solution",        nodeLeft);   // tab alongside Scene Hierarchy
     ImGui::DockBuilderDockWindow("Viewport",        nodeCenter);
     ImGui::DockBuilderDockWindow("Inspector",       nodeRight);
     ImGui::DockBuilderDockWindow("Assets",          nodeAssets);
