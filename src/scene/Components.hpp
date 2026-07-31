@@ -93,6 +93,17 @@ struct Children {
 };
 
 // ---------------------------------------------------------------------------
+// KeyboardMovement – automatic WASD / arrow-key movement at runtime
+// ---------------------------------------------------------------------------
+struct KeyboardMovement {
+    float speed       = 200.f; // world units (pixels) per second
+    bool  lockX       = false;
+    bool  lockY       = false;
+    bool  useWASD     = true;
+    bool  useArrows   = true;
+};
+
+// ---------------------------------------------------------------------------
 // ScriptComponent – associates a C# source file with an entity
 // ---------------------------------------------------------------------------
 struct ScriptComponent {

@@ -47,11 +47,12 @@ void InspectorPanel::OnImGuiRender() {
     ImGui::Separator();
     DrawTransform2D();
 
-    if (m_scene->HasComponent<SpriteRenderer>(m_selected))  { ImGui::Separator(); DrawSpriteRenderer(); }
-    if (m_scene->HasComponent<Camera2D>(m_selected))        { ImGui::Separator(); DrawCamera2D(); }
-    if (m_scene->HasComponent<BoxCollider2D>(m_selected))   { ImGui::Separator(); DrawBoxCollider2D(); }
-    if (m_scene->HasComponent<CircleCollider2D>(m_selected)){ ImGui::Separator(); DrawCircleCollider2D(); }
-    if (m_scene->HasComponent<ScriptComponent>(m_selected)) { ImGui::Separator(); DrawScriptComponent(); }
+    if (m_scene->HasComponent<SpriteRenderer>(m_selected))   { ImGui::Separator(); DrawSpriteRenderer(); }
+    if (m_scene->HasComponent<Camera2D>(m_selected))         { ImGui::Separator(); DrawCamera2D(); }
+    if (m_scene->HasComponent<BoxCollider2D>(m_selected))    { ImGui::Separator(); DrawBoxCollider2D(); }
+    if (m_scene->HasComponent<CircleCollider2D>(m_selected)) { ImGui::Separator(); DrawCircleCollider2D(); }
+    if (m_scene->HasComponent<KeyboardMovement>(m_selected)) { ImGui::Separator(); DrawKeyboardMovement(); }
+    if (m_scene->HasComponent<ScriptComponent>(m_selected))  { ImGui::Separator(); DrawScriptComponent(); }
 
     ImGui::Spacing();
     DrawAddComponentMenu();
@@ -199,11 +200,30 @@ void InspectorPanel::DrawAddComponentMenu() {
         if (!m_scene->HasComponent<CircleCollider2D>(m_selected))
             if (ImGui::MenuItem("Circle Collider 2D"))
                 m_scene->AddComponent<CircleCollider2D>(m_selected);
+        if (!m_scene->HasComponent<KeyboardMovement>(m_selected))
+            if (ImGui::MenuItem("Keyboard Movement"))
+                m_scene->AddComponent<KeyboardMovement>(m_selected);
         if (!m_scene->HasComponent<ScriptComponent>(m_selected))
             if (ImGui::MenuItem("Script Component"))
                 m_scene->AddComponent<ScriptComponent>(m_selected);
         ImGui::EndPopup();
     }
+}
+
+// ---------------------------------------------------------------------------
+void InspectorPanel::DrawKeyboardMovement() {
+    if (!ImGui::CollapsingHeader("Keyboard Movement", ImGuiTreeNodeFlags_DefaultOpen)) return;
+
+    auto& km = m_scene->GetComponent<KeyboardMovement>(m_selected);
+    ImGui::DragFloat("Speed##km", &km.speed, 1.f, 1.f, 5000.f, "%.0f px/s");
+    ImGui::Checkbox("Lock X##km", &km.lockX); ImGui::SameLine();
+    ImGui::Checkbox("Lock Y##km", &km.lockY);
+    ImGui::Checkbox("WASD##km",   &km.useWASD);   ImGui::SameLine();
+    ImGui::Checkbox("Arrows##km", &km.useArrows);
+    ImGui::TextDisabled("W/S = up/down   A/D = left/right");
+
+    if (ImGui::SmallButton("Remove##km"))
+        m_scene->RemoveComponent<KeyboardMovement>(m_selected);
 }
 
 // ---------------------------------------------------------------------------
@@ -244,8 +264,14 @@ void InspectorPanel::DrawScriptComponent() {
             if (!fs::exists(fp)) {
                 std::ofstream f(fp.string());
                 f << "using Microsoft.Xna.Framework;\n\n"
-                     "public class " << sc.className << "\n{\n"
-                     "    public void Update(GameTime gameTime)\n    {\n    }\n}\n";
+                     "// Extend EntityScript and override Update() to drive this entity.\n"
+                     "// Game1 discovers this class automatically — no registration needed.\n"
+                     "public class " << sc.className << " : EntityScript\n{\n"
+                     "    public override void Start(SceneEntity entity)\n    {\n"
+                     "        // Called once when the scene loads.\n    }\n\n"
+                     "    public override void Update(SceneEntity entity, GameTime gameTime)\n    {\n"
+                     "        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;\n"
+                     "        // Modify entity.X, entity.Y, entity.Rotation, etc.\n    }\n}\n";
             }
         }
     }

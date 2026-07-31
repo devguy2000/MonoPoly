@@ -23,6 +23,7 @@ private:
     void DrawAddComponentMenu();
 
     void DrawSceneSettings();
+    void DrawKeyboardMovement();
     void DrawScriptComponent();
     void TryLoadTexture(const std::string& contentName);
 

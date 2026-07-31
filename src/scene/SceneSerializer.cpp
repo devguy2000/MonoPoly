@@ -74,6 +74,17 @@ static json SerializeEntity(SceneGraph& scene, entt::entity e) {
         };
     }
 
+    if (reg.all_of<KeyboardMovement>(e)) {
+        auto& km = reg.get<KeyboardMovement>(e);
+        je["keyboard_movement"] = {
+            {"speed",       km.speed},
+            {"lock_x",      km.lockX},
+            {"lock_y",      km.lockY},
+            {"use_wasd",    km.useWASD},
+            {"use_arrows",  km.useArrows}
+        };
+    }
+
     if (reg.all_of<ScriptComponent>(e)) {
         auto& sc = reg.get<ScriptComponent>(e);
         je["script"] = {{"class", sc.className}, {"file", sc.filePath}};
@@ -143,6 +154,16 @@ static entt::entity DeserializeEntity(SceneGraph& scene,
         cc.offset    = DeserVec2(jcc.value("offset", json{}));
         cc.radius    = jcc.value("radius", 0.5f);
         cc.isTrigger = jcc.value("is_trigger", false);
+    }
+
+    if (je.contains("keyboard_movement")) {
+        auto& jk = je["keyboard_movement"];
+        auto& km = scene.AddComponent<KeyboardMovement>(e);
+        km.speed      = jk.value("speed",      200.f);
+        km.lockX      = jk.value("lock_x",     false);
+        km.lockY      = jk.value("lock_y",     false);
+        km.useWASD    = jk.value("use_wasd",   true);
+        km.useArrows  = jk.value("use_arrows", true);
     }
 
     if (je.contains("script")) {
